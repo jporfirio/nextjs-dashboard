@@ -1,4 +1,4 @@
-import { sql, db } from "@vercel/postgres";
+import { sql } from "@vercel/postgres";
 import {
   CustomerField,
   CustomersTableType,
@@ -9,15 +9,13 @@ import {
 } from "./definitions";
 import { formatCurrency } from "./utils";
 
-export const client = await db.connect();
-
 export async function fetchRevenue() {
   try {
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
     // await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    const data = await client.sql<Revenue>`SELECT * FROM revenue`;
+    const data = await sql<Revenue>`SELECT * FROM revenue`;
     return data.rows;
   } catch (error) {
     console.error("Database Error:", error);
@@ -27,7 +25,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    const data = await client.sql<LatestInvoiceRaw>`
+    const data = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
@@ -50,9 +48,9 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = client.sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = client.sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = client.sql`SELECT
+    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
+    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
+    const invoiceStatusPromise = sql`SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
@@ -88,7 +86,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await client.sql<InvoicesTable>`
+    const invoices = await sql<InvoicesTable>`
       SELECT
         invoices.id,
         invoices.amount,
@@ -118,7 +116,7 @@ export async function fetchFilteredInvoices(
 
 export async function fetchInvoicesPages(query: string) {
   try {
-    const count = await client.sql`SELECT COUNT(*)
+    const count = await sql`SELECT COUNT(*)
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
