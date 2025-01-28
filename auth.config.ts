@@ -1,5 +1,4 @@
 import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
 
 export const authConfig = {
   pages: {
@@ -18,5 +17,5 @@ export const authConfig = {
       return true;
     },
   },
-  providers: [Credentials({})], // Add providers with an empty array for now
+  providers: [], // Add providers with an empty array for now
 } satisfies NextAuthConfig;
