@@ -52,7 +52,7 @@ export async function createInvoice(previousState: State, formData: FormData) {
     INSERT INTO invoices (customer_id, amount, status, date)
     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
   `;
-  } catch (err) {
+  } catch {
     return { message: "Database Error: Failed to create invoice" };
   } finally {
     client.release();
