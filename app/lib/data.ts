@@ -1,4 +1,4 @@
-import { sql, db, type VercelPoolClient } from "@vercel/postgres";
+import { db } from "@vercel/postgres";
 import {
   CustomerField,
   CustomersTableType,
