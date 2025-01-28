@@ -29,9 +29,9 @@ export async function createInvoice(formData: FormData) {
     VALUES (${data.customerId}, ${amountInCents}, ${data.status}, ${date})
   `;
 
+  client.release();
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
-  client.release();
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
@@ -51,7 +51,7 @@ export async function updateInvoice(id: string, formData: FormData) {
     WHERE id = ${id}
   `;
 
+  client.release();
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
-  client.release();
 }
