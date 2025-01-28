@@ -15,7 +15,7 @@ const FormSchema = z.object({
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 export async function createInvoice(formData: FormData) {
-  const data = CreateInvoice.parse({
+  const data = FormSchema.omit({ id: true, date: true }).parse({
     customerId: formData.get("customerId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
@@ -24,12 +24,18 @@ export async function createInvoice(formData: FormData) {
   const date = new Date().toISOString().split("T")[0];
 
   const client = await db.connect();
-  await client.sql`
+
+  try {
+    await client.sql`
     INSERT INTO invoices (customer_id, amount, status, date)
     VALUES (${data.customerId}, ${amountInCents}, ${data.status}, ${date})
   `;
+  } catch (err) {
+    console.warn(err);
+  } finally {
+    client.release();
+  }
 
-  client.release();
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
@@ -45,20 +51,31 @@ export async function updateInvoice(id: string, formData: FormData) {
   const amountInCents = amount * 100;
 
   const client = await db.connect();
-  await client.sql`
+  try {
+    await client.sql`
     UPDATE invoices
     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
     WHERE id = ${id}
   `;
+  } catch (err) {
+    console.warn(err);
+  } finally {
+    client.release();
+  }
 
-  client.release();
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
 
 export async function deleteInvoice(id: string) {
   const client = await db.connect();
-  await client.sql`DELETE FROM invoices WHERE id = ${id}`;
-  client.release();
-  revalidatePath("/dashboard/invoices");
+
+  try {
+    await client.sql`DELETE FROM invoices WHERE id = ${id}`;
+    revalidatePath("/dashboard/invoices");
+  } catch (err) {
+    console.warn(err);
+  } finally {
+    client.release();
+  }
 }
